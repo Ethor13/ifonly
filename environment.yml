@@ -1,0 +1,16 @@
+name: ifonly
+channels:
+  - conda-forge
+  - nodefaults
+dependencies:
+  # Environment Dependencies
+  - python=3.12
+  - gh
+
+  # Development Dependencies
+  - black
+  - mypy
+  - pre-commit
+
+  # Project Dependencies
+  - pandas
