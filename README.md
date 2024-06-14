@@ -1,12 +1,8 @@
-=======
-If Only
-=======
+# If Only
 
 A simulator for historical Draft Kings Contests
 
-===============
-Getting Started
-===============
+# Getting Started
 
 ```bash
 make create_environment
