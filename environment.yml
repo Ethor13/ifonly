@@ -14,3 +14,4 @@ dependencies:
 
   # Project Dependencies
   - pandas
+  - tqdm

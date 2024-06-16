@@ -7,15 +7,12 @@ name = "ifonly"
 version = "0.1.0"
 description = "A simulator for historical Draft Kings Contests"
 authors = [{ name = "Ethan Orlowsky", email = "ethaniorlowsky@gmail.com" }]
-license = "MIT"
 requires-python = ">=3.12"
-dependencies = ["pandas>=2.2.2"]
-
-[tool.setuptools]
-package-dir = { "" = "src" }
+dependencies = ["pandas>=2.2.2", "tqdm"]
 
 [tool.setuptools.packages.find]
-include = ["src"]
+where = ["src"]
+include = ["ifonly"]
 
 [tool.black]
 line-length = 88
