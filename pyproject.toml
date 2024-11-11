@@ -10,9 +10,8 @@ authors = [{ name = "Ethan Orlowsky", email = "ethaniorlowsky@gmail.com" }]
 requires-python = ">=3.12"
 dependencies = ["pandas>=2.2.2", "tqdm"]
 
-[tool.setuptools.packages.find]
-where = ["src"]
-include = ["ifonly"]
+[tool.setuptools]
+package-dir = { "" = "src" }
 
 [tool.black]
 line-length = 88

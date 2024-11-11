@@ -9,3 +9,12 @@ __pycache__/
 
 # data
 data
+
+# solvers
+solvers
+
+# log files
+*.log
+
+# outputs
+results

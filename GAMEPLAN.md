@@ -13,3 +13,8 @@ Submodules are needed to
 3. Validate the lineups
 4. Judge the lineups
 5. Calculate returns
+
+TODO:
+
+-   turn algorithms into some sort of interface/super-sub class relationship for auto-detection
+-   make sure summary shows the correct entry fees when I enter multiple lineups in the same contest

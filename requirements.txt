@@ -2,3 +2,4 @@ black
 mypy
 pre-commit
 pandas
+matplotlib
