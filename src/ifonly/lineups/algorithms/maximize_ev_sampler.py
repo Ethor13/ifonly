@@ -1,7 +1,7 @@
 import pandas as pd
 import numpy as np
 from ifonly import Contest
-from ifonly.lineups.algorithms.algorithm import Algorithm
+from ifonly.lineups.algorithms import Algorithm
 import pyomo.environ as pyo
 from pyomo.core.expr.numeric_expr import LinearExpression
 from pyomo.core.base.PyomoModel import ConcreteModel
@@ -12,15 +12,18 @@ from typing import Tuple, List
 
 class MaximizeEVSamplerAlgorithm(Algorithm):
     name = "maximize_ev_sampler"
+    cache_type = defaultdict[int, List[pd.DataFrame]]
 
     def __init__(self):
         super().__init__(MaximizeEVSamplerAlgorithm.name)
 
-    def initialize_cache(self) -> defaultdict[int, List[pd.DataFrame]]:
+    @classmethod
+    def get_empty_cache(cls) -> "MaximizeEVSamplerAlgorithm.cache_type":
         return defaultdict(list)
 
+    @classmethod
     def initialize_problem(
-        self,
+        cls,
         contest: Contest,
         salary: int,
         projection_cutoff: float,
@@ -106,7 +109,13 @@ class MaximizeEVSamplerAlgorithm(Algorithm):
     def get_drafted_indices(cls, model: ConcreteModel) -> pd.Series:
         return pd.Series([key for key, value in model.drafted.get_values().items() if value > 0.5])  # type: ignore
 
-    def generate_lineups(self, contest: Contest, **kwargs) -> pd.DataFrame:
+    @classmethod
+    def generate_lineups(
+        cls,
+        contest: Contest,
+        cache: "MaximizeEVSamplerAlgorithm.cache_type",
+        **kwargs,
+    ) -> pd.DataFrame:
         """Single Lineup Solver"""
 
         try:
@@ -134,8 +143,8 @@ class MaximizeEVSamplerAlgorithm(Algorithm):
         except:
             raise TypeError("solver must be specified in configuration file")
 
-        if contest.details.draft_group_id not in self.cache:
-            model, opt = self.initialize_problem(contest, SALARY, PROJECTION_CUTOFF, SOLVER)
+        if contest.details.draft_group_id not in cache:
+            model, opt = cls.initialize_problem(contest, SALARY, PROJECTION_CUTOFF, SOLVER)
 
             for lineup_num in range(SAMPLE_SIZE):
                 sol = opt.solve() if USE_PERSISTENT_SOLVER else opt.solve(model)
@@ -144,7 +153,7 @@ class MaximizeEVSamplerAlgorithm(Algorithm):
                     breakpoint()
                     raise Exception(f"Solver terminated with condition {cond}")
 
-                drafted_indices = MaximizeEVSamplerAlgorithm.get_drafted_indices(model)
+                drafted_indices = cls.get_drafted_indices(model)
 
                 lineup = (
                     contest.draftables.iloc[drafted_indices]
@@ -153,7 +162,7 @@ class MaximizeEVSamplerAlgorithm(Algorithm):
                     .swaplevel()
                 )
 
-                self.cache[contest.details.draft_group_id].append(lineup)
+                cache[contest.details.draft_group_id].append(lineup)
 
                 # Prevent this exact lineup from being drafted again
                 drafted_player_ids = contest.draftables.iloc[drafted_indices].player_id
@@ -171,7 +180,7 @@ class MaximizeEVSamplerAlgorithm(Algorithm):
                 else:
                     model.constraints.add(lineup_overlap_constraint)  # type: ignore
 
-        return self.cache[contest.details.draft_group_id][np.random.choice(SAMPLE_SIZE)]
+        return cache[contest.details.draft_group_id][np.random.choice(SAMPLE_SIZE)]
 
         # TODO: add covariance in another algorithm
         # player_ids = classic_draftables.loc[drafted].player_id

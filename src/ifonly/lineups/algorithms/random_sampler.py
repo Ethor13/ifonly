@@ -1,19 +1,23 @@
 from ifonly import Contest
 from ifonly.lineups.validate import is_valid_lineup
-from ifonly.lineups.algorithms.algorithm import Algorithm
+from ifonly.lineups.algorithms import Algorithm
 import pandas as pd
+from typing import Optional
 
 
 class RandomAlgorithm(Algorithm):
     name = "random_sampler"
+    cache_type = Optional[None]
 
     def __init__(self):
         super().__init__(RandomAlgorithm.name)
 
-    def initialize_cache(self) -> None:
+    @classmethod
+    def get_empty_cache(cls) -> "RandomAlgorithm.cache_type":
         return None
 
-    def generate_lineups(self, contest: Contest, **kwargs) -> pd.DataFrame:
+    @classmethod
+    def generate_lineups(cls, contest: Contest, cache: "RandomAlgorithm.cache_type", **kwargs) -> pd.DataFrame:
         # take a super naive approach at first just to get the ball rolling
         while True:
             lineup_by_roster_slot = []

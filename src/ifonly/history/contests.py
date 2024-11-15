@@ -1,7 +1,6 @@
 import pandas as pd
 import datetime as dt
 from pathlib import Path
-from tqdm import tqdm
 from typing import Generator
 from ifonly import Contest
 from ifonly.utils.matcher import approximate_match
@@ -194,8 +193,10 @@ def get_contests(date: dt.datetime) -> Generator[Contest, None, None]:
     except FileNotFoundError:
         return logger.info(f"Skipping {date}")
 
-    # for contest_id, contest_standings in standings.groupby(level="contest_id"):
-    for contest_id, contest_standings in tqdm(standings.groupby(level="contest_id"), desc=date.strftime(r"%Y-%m-%d")):
+    # first, return number of contests
+    yield standings.index.get_level_values("contest_id").nunique()  # type: ignore
+
+    for contest_id, contest_standings in standings.groupby(level="contest_id"):
         try:
             details: pd.Series = contests_details.loc[contest_id]  # type: ignore
             draft_group = draft_groups.loc[details.draft_group_id]

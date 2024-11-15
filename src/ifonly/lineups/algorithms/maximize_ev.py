@@ -1,7 +1,7 @@
 import pandas as pd
 import numpy as np
 from ifonly import Contest
-from ifonly.lineups.algorithms.algorithm import Algorithm
+from ifonly.lineups.algorithms import Algorithm
 import pyomo.environ as pyo
 from pyomo.core.expr.numeric_expr import LinearExpression
 from pyomo.core.base.PyomoModel import ConcreteModel
@@ -11,14 +11,17 @@ from typing import Tuple, Dict
 
 class MaximizeEVAlgorithm(Algorithm):
     name = "maximize_ev"
+    cache_type = Dict[int, pd.DataFrame]
 
     def __init__(self):
         super().__init__(MaximizeEVAlgorithm.name)
 
-    def initialize_cache(self) -> Dict[int, pd.DataFrame]:
+    @classmethod
+    def get_empty_cache(cls) -> "MaximizeEVAlgorithm.cache_type":
         return dict()
 
-    def initialize_problem(self, contest: Contest, salary: int, solver: dict) -> Tuple[ConcreteModel, OptSolver]:
+    @classmethod
+    def initialize_problem(cls, contest: Contest, salary: int, solver: dict) -> Tuple[ConcreteModel, OptSolver]:
         num_to_draft = contest.lineup_reqs.sum()
         num_draftables = len(contest.draftables)
         num_players = contest.draftables.player_id.nunique()
@@ -94,7 +97,13 @@ class MaximizeEVAlgorithm(Algorithm):
     def get_drafted_indices(cls, model: ConcreteModel) -> pd.Series:
         return pd.Series([key for key, value in model.drafted.get_values().items() if value > 0.5])  # type: ignore
 
-    def generate_lineups(self, contest: Contest, **kwargs) -> pd.DataFrame:
+    @classmethod
+    def generate_lineups(
+        cls,
+        contest: Contest,
+        cache: "MaximizeEVAlgorithm.cache_type",
+        **kwargs,
+    ) -> pd.DataFrame:
         """Single Lineup Solver"""
 
         try:
@@ -112,10 +121,10 @@ class MaximizeEVAlgorithm(Algorithm):
         except:
             raise TypeError("solver must be specified in configuration file")
 
-        if contest.details.draft_group_id in self.cache:
-            return self.cache[contest.details.draft_group_id]
+        if contest.details.draft_group_id in cache:
+            return cache[contest.details.draft_group_id]
 
-        model, opt = self.initialize_problem(contest, SALARY, SOLVER)
+        model, opt = cls.initialize_problem(contest, SALARY, SOLVER)
 
         sol = opt.solve() if USE_PERSISTENT_SOLVER else opt.solve(model)
 
@@ -123,7 +132,7 @@ class MaximizeEVAlgorithm(Algorithm):
             breakpoint()
             raise Exception(f"Solver terminated with condition {cond}")
 
-        drafted_indices = MaximizeEVAlgorithm.get_drafted_indices(model)
+        drafted_indices = cls.get_drafted_indices(model)
 
         lineup = (
             contest.draftables.iloc[drafted_indices]
@@ -132,7 +141,7 @@ class MaximizeEVAlgorithm(Algorithm):
             .swaplevel()
         )
 
-        self.cache[contest.details.draft_group_id] = lineup
+        cache[contest.details.draft_group_id] = lineup
 
         return lineup
 

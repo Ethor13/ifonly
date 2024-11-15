@@ -4,7 +4,7 @@ from typing import List, Callable
 import logging
 
 logger = logging.getLogger(__name__)
-logging.basicConfig(filename="matcher.log", level=logging.INFO)
+logging.basicConfig(filename="matcher.log", level=logging.INFO, filemode="w")
 
 MATCH_CUTOFF = 0.7
 
@@ -57,7 +57,9 @@ def approximate_match(source: pd.DataFrame, lookup: pd.DataFrame, what: str, on:
                 logger.info(f"Matched {row.get("name")} with {lookup_matches.iloc[match_ratios.argmax()].get("name")}")
             else:
                 what_best_guess = None
-                logger.info(f"Did not match match {row.get("name")} - Closest was {lookup_matches.iloc[match_ratios.argmax()].get("name")}")
+                logger.info(
+                    f"Did not match match {row.get("name")} - Closest was {lookup_matches.iloc[match_ratios.argmax()].get("name")}"
+                )
         except:
             breakpoint()
             exit(1)

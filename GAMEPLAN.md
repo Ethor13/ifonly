@@ -16,5 +16,6 @@ Submodules are needed to
 
 TODO:
 
--   turn algorithms into some sort of interface/super-sub class relationship for auto-detection
+-   make it so caches are separated by date or something, not sure exactly what the optimization is, but with
+    multiprocessing, it's probably best to have them be independent
 -   make sure summary shows the correct entry fees when I enter multiple lineups in the same contest

@@ -1,5 +1,5 @@
-import pandas as pd
 from ifonly import Contest
+import pandas as pd
 from typing import Any
 
 
@@ -15,14 +15,24 @@ class Algorithm:
             2. max_entries
             3. payouts
         """
-        self.cache = self.initialize_cache()
 
-    def initialize_cache(self) -> Any:
+    @classmethod
+    def get_empty_cache(cls) -> Any:
         raise NotImplementedError()
+
+    @classmethod
+    def generate_lineups(cls, contest: Contest, cache: Any, **kwargs) -> pd.DataFrame:
+        raise NotImplementedError()
+
+
+class CachedAlgorithm:
+    def __init__(self, algorithm: Algorithm):
+        self.algorithm = algorithm
+        self.initialize_cache()
+
+    def initialize_cache(self):
+        self.cache = self.algorithm.get_empty_cache()
 
     def clear_cache(self) -> None:
         del self.cache
-        self.cache = self.initialize_cache()
-
-    def generate_lineups(self, contest: Contest) -> pd.DataFrame:
-        raise NotImplementedError()
+        self.cache = self.algorithm.get_empty_cache()

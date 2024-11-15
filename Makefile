@@ -9,3 +9,6 @@ create_environment:
 
 run:
 	python -m ifonly
+
+visualize:
+	python -m visualizations

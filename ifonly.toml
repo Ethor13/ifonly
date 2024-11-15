@@ -1,5 +1,7 @@
 start_date = 2024-01-01
-end_date = 2024-01-02
+end_date = 2024-01-01
+parallelize = true
+concurrent_threads = 6
 
 [solvers.cbc]
 name = "cbc"

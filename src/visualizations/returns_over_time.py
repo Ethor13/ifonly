@@ -67,7 +67,3 @@ def profit():
 
     plt.tight_layout()
     plt.show()
-
-
-payouts_vs_entry_fees()
-profit()

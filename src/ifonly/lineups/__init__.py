@@ -1,9 +1,9 @@
-from ifonly.lineups.algorithms.algorithm import Algorithm
-import importlib
-import os
-import glob
+from ifonly.lineups.algorithms import Algorithm
 import sys
+import glob
+import os
 import inspect
+import importlib
 
 
 def import_all_from_directory(directory):
@@ -11,10 +11,10 @@ def import_all_from_directory(directory):
     sys.path.insert(0, directory)
 
     # Import all modules in the directory
-    algorithms = {}
+    algorithms: set[Algorithm] = set()
     for filepath in glob.glob(os.path.join(directory, "*.py")):
         module_name = os.path.splitext(os.path.basename(filepath))[0]
-        if module_name == "algorithm":
+        if module_name == "__init__":
             continue
 
         module = importlib.import_module(module_name)
@@ -28,7 +28,7 @@ def import_all_from_directory(directory):
         if len(algorithm) != 1:
             raise RuntimeError("Expected exactly one Algorithm to be defined in each file")
 
-        algorithms[getattr(algorithm[0], "name")] = algorithm[0]()  # type: ignore
+        algorithms.add(algorithm[0])  # type: ignore
 
     # Remove directory from sys.path to avoid side effects
     sys.path.pop(0)
