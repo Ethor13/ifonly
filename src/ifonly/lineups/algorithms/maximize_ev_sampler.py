@@ -11,11 +11,8 @@ from typing import Tuple, List
 
 
 class MaximizeEVSamplerAlgorithm(Algorithm):
-    name = "maximize_ev_sampler"
     cache_type = defaultdict[int, List[pd.DataFrame]]
-
-    def __init__(self):
-        super().__init__(MaximizeEVSamplerAlgorithm.name)
+    name = __name__
 
     @classmethod
     def get_empty_cache(cls) -> "MaximizeEVSamplerAlgorithm.cache_type":
@@ -39,7 +36,7 @@ class MaximizeEVSamplerAlgorithm(Algorithm):
         # NOTE: I think dividing by gcd will make things run faster, but haven't tested this
         salary_gcd = np.gcd.reduce(salaries)
 
-        model = pyo.ConcreteModel(name=MaximizeEVSamplerAlgorithm.name)
+        model = pyo.ConcreteModel(name=__name__)
 
         # Pyomo Variables
         model.drafted = pyo.Var(range(num_draftables), domain=pyo.Boolean)
@@ -106,10 +103,6 @@ class MaximizeEVSamplerAlgorithm(Algorithm):
         return model, opt
 
     @classmethod
-    def get_drafted_indices(cls, model: ConcreteModel) -> pd.Series:
-        return pd.Series([key for key, value in model.drafted.get_values().items() if value > 0.5])  # type: ignore
-
-    @classmethod
     def generate_lineups(
         cls,
         contest: Contest,
@@ -136,7 +129,15 @@ class MaximizeEVSamplerAlgorithm(Algorithm):
         try:
             SAMPLE_SIZE = kwargs["sample_size"]
         except:
-            raise TypeError("projection_cutoff must be specified in configuration file")
+            raise TypeError("sample_size must be specified in configuration file")
+
+        try:
+            DESIRED_LINEUPS = kwargs["desired_lineups"]
+        except:
+            raise TypeError("desired_lineups must be specified in configuration file")
+
+        if SAMPLE_SIZE < DESIRED_LINEUPS:
+            raise Exception("The Sample Size must be greater than the desired number of lineups")
 
         try:
             SOLVER = kwargs["solver"]
@@ -180,7 +181,10 @@ class MaximizeEVSamplerAlgorithm(Algorithm):
                 else:
                     model.constraints.add(lineup_overlap_constraint)  # type: ignore
 
-        return cache[contest.details.draft_group_id][np.random.choice(SAMPLE_SIZE)]
+        lineups_to_submit = min(DESIRED_LINEUPS, contest.max_entries)
+        selected_lineup_indices = np.random.choice(SAMPLE_SIZE, lineups_to_submit, replace=False)
+        selected_lineups = pd.concat([cache[contest.details.draft_group_id][idx] for idx in selected_lineup_indices])
+        return selected_lineups
 
         # TODO: add covariance in another algorithm
         # player_ids = classic_draftables.loc[drafted].player_id

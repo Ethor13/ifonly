@@ -1,6 +1,6 @@
 start_date = 2024-01-01
 end_date = 2024-01-01
-parallelize = true
+parallelize = false
 concurrent_threads = 6
 
 [solvers.cbc]
@@ -9,19 +9,12 @@ executable = "solvers/cbc.exe"
 persistent = false
 
 [algorithms.maximize_ev]
-run = true
+run = false
 salary = 50_000
 solver = "cbc"
 
 [algorithms.maximize_ev_sampler]
-run = false
-salary = 50_000
-projection_cutoff = 5
-sample_size = 5
-solver = "cbc"
-
-[algorithms.maximize_ev_multiple_sampler]
-run = false
+run = true
 salary = 50_000
 projection_cutoff = 5
 sample_size = 5

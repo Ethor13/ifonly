@@ -1,4 +1,5 @@
 from ifonly import Contest
+from pyomo.core.base.PyomoModel import ConcreteModel
 import pandas as pd
 from typing import Any
 
@@ -19,6 +20,10 @@ class Algorithm:
     @classmethod
     def get_empty_cache(cls) -> Any:
         raise NotImplementedError()
+
+    @classmethod
+    def get_drafted_indices(cls, model: ConcreteModel) -> pd.Series:
+        return pd.Series([key for key, value in model.drafted.get_values().items() if value > 0.5])  # type: ignore
 
     @classmethod
     def generate_lineups(cls, contest: Contest, cache: Any, **kwargs) -> pd.DataFrame:

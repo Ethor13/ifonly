@@ -6,11 +6,8 @@ from typing import Optional
 
 
 class RandomAlgorithm(Algorithm):
-    name = "random_sampler"
     cache_type = Optional[None]
-
-    def __init__(self):
-        super().__init__(RandomAlgorithm.name)
+    name = __name__
 
     @classmethod
     def get_empty_cache(cls) -> "RandomAlgorithm.cache_type":

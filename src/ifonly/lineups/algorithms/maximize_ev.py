@@ -10,11 +10,8 @@ from typing import Tuple, Dict
 
 
 class MaximizeEVAlgorithm(Algorithm):
-    name = "maximize_ev"
     cache_type = Dict[int, pd.DataFrame]
-
-    def __init__(self):
-        super().__init__(MaximizeEVAlgorithm.name)
+    name = __name__
 
     @classmethod
     def get_empty_cache(cls) -> "MaximizeEVAlgorithm.cache_type":
@@ -32,7 +29,7 @@ class MaximizeEVAlgorithm(Algorithm):
         # NOTE: I think dividing by gcd will make things run faster, but haven't tested this
         salary_gcd = np.gcd.reduce(salaries)
 
-        model = pyo.ConcreteModel(name=MaximizeEVAlgorithm.name)
+        model = pyo.ConcreteModel(name=__name__)
 
         # Pyomo Variables
         model.drafted = pyo.Var(range(num_draftables), domain=pyo.Boolean)
@@ -92,10 +89,6 @@ class MaximizeEVAlgorithm(Algorithm):
         #     opt = pyo.SolverFactory("cbc", executable="solvers/cbc.exe")
 
         return model, opt
-
-    @classmethod
-    def get_drafted_indices(cls, model: ConcreteModel) -> pd.Series:
-        return pd.Series([key for key, value in model.drafted.get_values().items() if value > 0.5])  # type: ignore
 
     @classmethod
     def generate_lineups(
